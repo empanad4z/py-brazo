@@ -1,9 +1,12 @@
 #include <routes.h>
 #include <utils.h>
+#include <LittleFS.h>
 
 void setupRoutes(AsyncWebServer &server) {
+    server.serveStatic("/", LittleFS, "/");
+    
     server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(200, "text/html", "/data/index.html");
+        request->send(LittleFS, "/index.html", "text/html");
     });
 
     server.on("/", HTTP_POST, [](AsyncWebServerRequest *request) {
@@ -25,6 +28,6 @@ void setupRoutes(AsyncWebServer &server) {
     });
 
     server.on("/real-time", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(200, "text/html", "/data/interactive.html");
+        request->send(LittleFS, "/interactive.html", "text/html");
     });
 }
