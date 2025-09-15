@@ -14,6 +14,9 @@ const DrawingApp = () => {
   const [size, setSize] = useState(5);
   const lastPoint = useRef<{ x: number; y: number } | null>(null);
 
+  const sizeRef = useRef<HTMLDivElement | null>(null);
+  const [showInput, setShowInput] = useState(false);
+
    // Setup canvas size to fill container (responsive)
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -170,9 +173,25 @@ const DrawingApp = () => {
     // ctx.fillRect(0,0, canvas.width, canvas.height);
   }, []);
 
+  useEffect(() => {
+  const handleClickOutside = (e: Event) => {
+    if (sizeRef.current && !sizeRef.current.contains(e.target as Node)) {
+      setShowInput(false);
+    }
+  };
+
+  document.addEventListener('pointerdown', handleClickOutside);
+
+  return () => {
+    document.removeEventListener('pointerdown', handleClickOutside);
+  };
+}, []);
+
+
+
 
   return (
-    <div className="w-full h-[75vh] max-h-[900px] flex flex-col gap-4">
+    <div className="w-full h-[85vh] max-h-[900px] flex flex-col gap-4">
         <div ref={containerRef} className="flex-1 border rounded-md overflow-hidden bg-white">
             {/* Canvas */}
             <canvas
@@ -187,38 +206,62 @@ const DrawingApp = () => {
         </div>
 
         {/* Toolbar */}
-        <div className="flex items-center mt-4 space-x-4 bg-gray-200 p-3 rounded-lg">
-            {/* Brush (not 100% functional yet) */}
-            <button className="p-2 bg-white rounded shadow">🖌️</button>
-            {/* Eraser */}
-            <button
-            className="p-2 bg-white rounded shadow"
-            onClick={() => setIsErasing(true)}
+        <div className="relative inline-flex flex-wrap gap-2 bg-gray-200 p-3 rounded-lg mx-auto">
+          {showInput && (
+            <div
+              ref={sizeRef}
+              className="absolute -top-16 left-1/2 -translate-x-1/2
+                        bg-white border border-gray-300 rounded-lg shadow-lg
+                        px-3 py-2"
             >
-            🧽
-            </button>
-            {/* Color Picker */}
-            <input
-            type="color"
-            value={color}
-            onChange={(e) => setColor(e.target.value)}
-            className="w-10 h-10 p-0 border-0 rounded"
-            />
-            {/* Brush size slider */}
-            <input
-            type="range"
-            min="1"
-            max="20"
-            value={size}
-            onChange={(e) => setSize(Number(e.target.value))}
-            className="w-32"
-            />
-            {/* Clear button */}
-            <button className="p-2 bg-red-500 text-white rounded" onClick={clearCanvas}>
-            🗑️
-            </button>
-            {/* Confirm button */}
-            <button className="p-2 bg-green-500 text-white rounded">✔️</button>
+              <input
+                type="range"
+                min="1"
+                max="20"
+                value={size}
+                onChange={(e) => setSize(Number(e.target.value))}
+                className="w-32"
+              />
+            </div>
+          )}
+        
+          {/* Brush (not 100% functional yet) */}
+          <button
+          className="p-2 bg-white rounded shadow"
+          onClick={() => setIsErasing(false)}
+          >
+          🖌️
+          </button>
+          {/* Eraser */}
+          <button
+          className="p-2 bg-white rounded shadow"
+          onClick={() => setIsErasing(true)}
+          >
+          🧽
+          </button>
+          {/* Color Picker */}  
+          <input
+          type="color"
+          value={color}
+          onChange={(e) => setColor(e.target.value)}
+          className="w-10 h-10 p-0 border-0 rounded"
+          />
+          {/* Brush size slider */}
+            
+          <button
+            className="p-2 bg-white rounded shadow"
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={() => setShowInput(!showInput)}
+          >
+            Size
+          </button>
+          
+          {/* Clear button */}
+          <button className="p-2 bg-red-500 text-white rounded" onClick={clearCanvas}>
+          🗑️
+          </button>
+          {/* Confirm button */}
+          <button className="p-2 bg-green-500 text-white rounded">✔️</button>
         </div>
     </div>
   );
